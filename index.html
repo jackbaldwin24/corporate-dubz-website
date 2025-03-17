@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporate Dubz - Under Construction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 2.5em;
+        }
+        p {
+            font-size: 1.2em;
+        }
+        #game-container {
+            margin-top: 30px;
+        }
+        #dropButton {
+            background-color: #ffcc00;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        #dropButton:hover {
+            background-color: #ffaa00;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hollon... I'm Working on It!</h1>
+    <p>The Corporate Dubz website is under construction, but in the meantime...</p>
+    <div id="game-container">
+        <button id="dropButton">Drop the Beat 🎵</button>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const messages = [
+            "BASS BOOSTED! 🔊", 
+            "AIRHORN SPAM! 📢📢📢", 
+            "SUBWOOFER ACTIVATED! 💥", 
+            "CORPORATE APPROVED ✅", 
+            "LINKEDIN ENDORSED FOR WUBS 🎛️"
+        ];
+        
+        document.getElementById("dropButton").addEventListener("click", function() {
+            let randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById("message").textContent = randomMessage;
+            let audio = new Audio("https://www.myinstants.com/media/sounds/mlg-airhorn.mp3");
+            audio.play();
+        });
+    </script>
+</body>
+</html>
