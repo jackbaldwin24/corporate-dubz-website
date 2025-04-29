@@ -1,67 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corporate Dubz - Under Construction</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #121212;
-            color: white;
-            margin: 0;
-            padding: 50px;
-        }
-        h1 {
-            font-size: 2.5em;
-        }
-        p {
-            font-size: 1.2em;
-        }
-        #game-container {
-            margin-top: 30px;
-        }
-        #dropButton {
-            background-color: #ffcc00;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.5em;
-            cursor: pointer;
-            border-radius: 10px;
-        }
-        #dropButton:hover {
-            background-color: #ffaa00;
-        }
-        #message {
-            margin-top: 20px;
-            font-size: 1.5em;
-        }
-    </style>
-</head>
-<body>
-    <h1>Hollon... I'm Working on It!</h1>
-    <p>The Corporate Dubz website is under construction, but in the meantime...</p>
-    <div id="game-container">
-        <button id="dropButton">Drop the Beat 🎵</button>
-        <p id="message"></p>
-    </div>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Corporate Dubz - Business casual bass music. Catch upcoming shows, connect on socials, and learn about Corporate Dubz’s unique bass-driven performances." />
+  <link rel="icon" href="images/favicon.ico" />
 
-    <script>
-        const messages = [
-            "BASS BOOSTED! 🔊", 
-            "AIRHORN SPAM! 📢📢📢", 
-            "SUBWOOFER ACTIVATED! 💥", 
-            "CORPORATE APPROVED ✅", 
-            "LINKEDIN ENDORSED FOR WUBS 🎛️"
-        ];
-        
-        document.getElementById("dropButton").addEventListener("click", function() {
-            let randomMessage = messages[Math.floor(Math.random() * messages.length)];
-            document.getElementById("message").textContent = randomMessage;
-            let audio = new Audio("https://www.myinstants.com/media/sounds/mlg-airhorn.mp3");
-            audio.play();
-        });
-    </script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome Free CSS (v6.x latest) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+  <title>Corporate Dubz</title>
+</head>
+<body class="bg-white text-gray-800 relative">
+
+  <!-- Hero Section -->
+  <section class="relative h-[70vh] md:h-[80vh] bg-cover bg-center" style="background-image: url('images/hero.jpg');">
+    <!-- Subtle shading overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60"></div>
+    <!-- Centered Logo (35% down) -->
+    <div class="absolute top-[35%] left-1/2 transform -translate-x-1/2 z-20">
+      <img src="images/corporate-stacked-white.png" alt="Corporate Dubz Logo" class="h-48 md:h-72 lg:h-96" />
+    </div>
+  </section>
+
+  <!-- Social Links -->
+  <section class="py-8 pt-16 text-center">
+    <h2 class="text-2xl font-semibold mb-4">Connect with Me</h2>
+    <div class="flex justify-center space-x-8">
+      <a href="https://instagram.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="text-3xl hover:text-pink-500">
+        <i class="fab fa-instagram"></i>
+      </a>
+      <a href="https://soundcloud.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="SoundCloud" class="text-3xl hover:text-orange-500">
+        <i class="fab fa-soundcloud"></i>
+      </a>
+      <a href="https://tiktok.com/@corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="TikTok" class="text-3xl hover:text-black">
+        <i class="fab fa-tiktok"></i>
+      </a>
+      <a href="https://twitter.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="text-3xl hover:text-blue-400">
+        <i class="fab fa-twitter"></i>
+      </a>
+      <a href="https://facebook.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="text-3xl hover:text-blue-600">
+        <i class="fab fa-facebook"></i>
+      </a>
+      <a href="mailto:corporatedubz@gmail.com" aria-label="Email" class="text-3xl hover:text-gray-600">
+        <i class="fas fa-envelope"></i>
+      </a>
+      <a href="https://linkedin.com/in/jackson-baldwin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="text-3xl hover:text-blue-700">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- Upcoming Shows -->
+  <section class="py-8 bg-gray-100">
+    <div class="max-w-3xl mx-auto px-4">
+      <h2 class="text-2xl font-semibold text-center mb-6">Upcoming Shows</h2>
+      <div class="grid grid-cols-1 gap-8">
+        <a href="https://www.etix.com/ticket/..." target="_blank" rel="noopener noreferrer" class="block group">
+          <img src="images/midroll.png" alt="Midroll flyer" loading="lazy" class="w-full rounded-lg shadow-lg transform group-hover:scale-105 transition" />
+          <div class="mt-2 text-center">
+            <p class="text-lg font-medium">June 14 — The Mint at The Intersection — Grand Rapids, MI</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-12">
+    <div class="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center gap-8">
+      <div class="md:w-1/2">
+        <img src="images/about.png" alt="Corporate Dubz performing live" loading="lazy" class="rounded-lg shadow-lg w-full" />
+      </div>
+      <div class="md:w-1/2 md:pl-8 space-y-6">
+        <h2 class="text-2xl font-semibold mb-4">About</h2>
+        <p class="text-gray-700 leading-relaxed">
+          Corporate Dubz is a Chicago-based riddim DJ known for precise mixing, heavy selections, and a distinct visual identity that playfully flips corporate culture on its head. With a presence rooted in both humor and intensity, his sets bring structure and chaos into perfect balance.
+        </p>
+        <p class="text-gray-700 leading-relaxed">
+          He recently played direct support for Leotrix and Black Carl! on their tour stop in Detroit, and has opened for artists including VKTM, Joust, Subfiltronik, and Drippy. Whether he’s setting the tone or pushing the energy to the limit, Corporate Dubz stands out as a consistent force in the Midwest’s underground scene.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-6 bg-gray-200 text-center">
+    <p class="text-sm">&copy; 2025 Corporate Dubz</p>
+  </footer>
+
 </body>
 </html>
