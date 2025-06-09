@@ -4,64 +4,106 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="Corporate Dubz - Business casual bass music. Catch upcoming shows, connect on socials, and learn about Corporate Dubz’s unique bass-driven performances." />
+  <meta property="og:title" content="Corporate Dubz – Business-Casual Bass">
+  <meta property="og:description" content="Upcoming shows and booking info for Chicago’s business dubstep boss.">
+  <meta property="og:image" content="/img/cover.jpg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="images/favicon.ico" />
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Font Awesome Free CSS (v6.x latest) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <link rel="stylesheet" href="index.css">
 
   <title>Corporate Dubz</title>
-</head>
-<body class="bg-white text-gray-800 relative">
 
-  <!-- Hero Section -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            fadeIn: 'fadeIn 2s ease-out forwards',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+          },
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body id="top" class="bg-white text-gray-800 relative">
+
+
+  <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur shadow-sm">
+    <nav class="max-w-5xl mx-auto flex justify-between items-center px-4 py-3">
+      <a href="#top" class="font-bold text-lg">Corporate Dubz</a>
+      <ul class="flex space-x-6 text-sm font-medium">
+        <li><a href="#shows" class="hover:text-pink-600">Shows</a></li>
+        <li><a href="#about" class="hover:text-pink-600">About</a></li>
+        <li><a href="#contact" class="hover:text-pink-600">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
   <section class="relative h-[70vh] md:h-[80vh] bg-cover bg-center" style="background-image: url('images/hero.JPG');">
-    <!-- Subtle shading overlay -->
-    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60"></div>
-    <!-- Centered Logo (35% down) -->
-    <div class="absolute top-[35%] left-1/2 transform -translate-x-1/2 z-20">
-      <img src="images/corporate-stacked-white.png" alt="Corporate Dubz Logo" class="h-48 md:h-72 lg:h-96" />
+    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60">
+      <a href="https://www.etix.com/ticket/c/44C96AB3B17D1A1AB16836C7DBEF8B84/gedi-flip-b2b-corporate-dubz" target="_blank" rel="noopener noreferrer" class="absolute top-24 left-4 md:left-4 md:top-24 w-full flex justify-center md:justify-start z-30">
+        <div class="bg-black/70 text-white px-4 py-2 rounded shadow flex flex-col items-start space-y-2 max-w-xs hover:brightness-110 transition">
+          <img src="images/banner.png" alt="Midroll Banner" class="h-48 w-auto rounded" />
+          <div id="countdown" class="text-sm md:text-base font-mono tracking-wide"></div>
+        </div>
+      </a>
+    </div>
+    <div class="absolute inset-0 flex flex-col items-center justify-center text-white text-center z-20 animate-fadeIn" data-aos="fade-down">
+      <img src="images/corporate-stacked-white.png" alt="Corporate Dubz Logo" class="h-48 md:h-72 lg:h-96 mb-4 mx-auto" />
+      <h1 class="text-3xl md:text-5xl font-bold tracking-wide drop-shadow-lg animate-bounce">Bass. Business. Brutality.</h1>
     </div>
   </section>
 
-  <!-- Social Links -->
   <section class="py-8 pt-16 text-center">
     <h2 class="text-2xl font-semibold mb-4">Connect with Me</h2>
     <div class="flex justify-center space-x-8">
-      <a href="https://instagram.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="text-3xl hover:text-pink-500">
+      <a href="https://instagram.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="text-3xl hover:scale-125 transform transition duration-300 hover:text-pink-500">
         <i class="fab fa-instagram"></i>
       </a>
-      <a href="https://soundcloud.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="SoundCloud" class="text-3xl hover:text-orange-500">
+      <a href="https://soundcloud.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="SoundCloud" class="text-3xl hover:scale-125 transform transition duration-300 hover:text-pink-500">
         <i class="fab fa-soundcloud"></i>
       </a>
-      <a href="https://tiktok.com/@corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="TikTok" class="text-3xl hover:text-black">
+      <a href="https://tiktok.com/@corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="TikTok" class="text-3xl hover:scale-125 transform transition duration-300 hover:text-pink-500">
         <i class="fab fa-tiktok"></i>
       </a>
-      <a href="https://twitter.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="text-3xl hover:text-blue-400">
+      <a href="https://twitter.com/corporatedubz" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="text-3xl hover:scale-125 transform transition duration-300 hover:text-pink-500">
         <i class="fab fa-twitter"></i>
       </a>
-      <a href="https://www.facebook.com/profile.php?id=61559428904694" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="text-3xl hover:text-blue-600">
+      <a href="https://www.facebook.com/profile.php?id=61559428904694" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="text-3xl hover:scale-125 transform transition duration-300 hover:text-pink-500">
         <i class="fab fa-facebook"></i>
       </a>
-      <a href="mailto:corporatedubz@gmail.com" aria-label="Email" class="text-3xl hover:text-gray-600">
+      <a href="mailto:corporatedubz@gmail.com" aria-label="Email" class="text-3xl hover:scale-125 transform transition duration-300 hover:text-pink-500">
         <i class="fas fa-envelope"></i>
       </a>
-      <a href="https://linkedin.com/in/jackson-baldwin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="text-3xl hover:text-blue-700">
+      <a href="https://linkedin.com/in/jackson-baldwin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="text-3xl hover:scale-125 transform transition duration-300 hover:text-pink-500">
         <i class="fab fa-linkedin"></i>
       </a>
     </div>
   </section>
 
-  <!-- Upcoming Shows -->
-  <section class="py-8 bg-gray-100">
+  <section id="shows" class="py-8 bg-gray-100 scroll-mt-24" data-aos="fade-up">
     <div class="max-w-3xl mx-auto px-4">
       <h2 class="text-2xl font-semibold text-center mb-6">Upcoming Shows</h2>
       <div class="grid grid-cols-1 gap-8">
-        <a href="https://www.etix.com/ticket/c/44C96AB3B17D1A1AB16836C7DBEF8B84/gedi-flip-b2b-corporate-dubz" target="_blank" rel="noopener noreferrer" class="block group">
+        <a href="https://www.etix.com/ticket/c/44C96AB3B17D1A1AB16836C7DBEF8B84/gedi-flip-b2b-corporate-dubz" target="_blank" rel="noopener noreferrer" class="block group relative overflow-hidden rounded-lg shadow-lg border-2 border-pink-500 hover:shadow-pink-500/50 transition" data-aos="flip-up">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition duration-700 animate-pulse"></div>
           <img src="images/midroll.png" alt="Midroll flyer" loading="lazy" class="w-full rounded-lg shadow-lg transform group-hover:scale-105 transition" />
-          <div class="mt-2 text-center">
+          <div class="mt-2 text-center relative z-10">
             <p class="text-lg font-medium">June 14 — The Mint at The Intersection — Grand Rapids, MI</p>
           </div>
         </a>
@@ -69,13 +111,12 @@
     </div>
   </section>
 
-  <!-- About Section -->
-  <section class="py-12">
+  <section id="about" class="py-12" data-aos="fade-left">
     <div class="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center gap-8">
-      <div class="md:w-1/2">
+      <div class="md:w-1/2" data-aos="zoom-out-right">
         <img src="images/about.png" alt="Corporate Dubz performing live" loading="lazy" class="rounded-lg shadow-lg w-full" />
       </div>
-      <div class="md:w-1/2 md:pl-8 space-y-6">
+      <div class="md:w-1/2 md:pl-8 space-y-6" data-aos="zoom-in-left">
         <h2 class="text-2xl font-semibold mb-4">About</h2>
         <p class="text-gray-700 leading-relaxed">
           Corporate Dubz is a Chicago-based riddim DJ known for precise mixing, heavy selections, and a distinct visual identity that playfully flips corporate culture on its head. With a presence rooted in both humor and intensity, his sets bring structure and chaos into perfect balance.
@@ -87,10 +128,22 @@
     </div>
   </section>
 
-  <!-- Footer -->
+  <section id="contact" class="py-16 bg-gray-100" data-aos="zoom-in">
+    <div class="max-w-lg mx-auto text-center">
+      <h2 class="text-3xl font-bold mb-4">Booking & Contact</h2>
+      <form action="https://formspree.io/f/mpwrppoe" method="POST" class="space-y-4">
+        <input required name="name" placeholder="Your Name" class="w-full border p-3 rounded" />
+        <input required type="email" name="email" placeholder="Your Email" class="w-full border p-3 rounded" />
+        <textarea required name="message" rows="5" placeholder="Message or booking details" class="w-full border p-3 rounded"></textarea>
+        <button class="bg-black text-white py-3 px-6 rounded hover:bg-pink-600 w-full transition transform hover:scale-105">Send</button>
+      </form>
+    </div>
+  </section>
+
   <footer class="py-6 bg-gray-200 text-center">
     <p class="text-sm">&copy; 2025 Corporate Dubz</p>
   </footer>
 
 </body>
+<script src="scripts.js"></script>
 </html>
