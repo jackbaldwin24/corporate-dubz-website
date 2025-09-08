@@ -9,31 +9,46 @@
     perSec: 0,
     shop: [
       // Per‑click path (more CDJs & better cue feel)
-      { id:'cdj',   name:'Additional CDJ',         desc:'+1 hype/click (more cue buttons)', cost:67,   type:'click',  value:1,   owned:0, scale:1.45 },
-      { id:'spr',   name:'High‑Tension Cue Springs',desc:'+2 hype/click (snappier stabs)',   cost:1200,  type:'click',  value:2,   owned:0, scale:1.5  },
+      { id: 'cdj', name: 'Additional CDJ', desc: '+1 hype/click (more cue buttons)', cost: 67, type: 'click', value: 1, owned: 0, scale: 1.45 },
+      { id: 'spr', name: 'High‑Tension Cue Springs', desc: '+2 hype/click (snappier stabs)', cost: 1200, type: 'click', value: 2, owned: 0, scale: 1.5 },
       // Multipliers (limited so they don’t snowball)
-      { id:'mixer', name:'DJM‑900NXS2 Mixer',      desc:'×1.5 click power (one‑time)',      cost:8000,  type:'mult',   value:1.5, owned:0, scale:1.6, max:1 },
-      { id:'brand', name:'Corporate Merch Drop',   desc:'×2 all hype gain (one‑time)',       cost:120000,type:'global', value:2,   owned:0, scale:1.7, max:1 },
+      { id: 'mixer', name: 'DJM‑900NXS2 Mixer', desc: '×1.5 click power (one‑time)', cost: 8000, type: 'mult', value: 1.5, owned: 0, scale: 1.6, max: 1 },
+      { id: 'brand', name: 'Corporate Merch Drop', desc: '×2 all hype gain (one‑time)', cost: 120000, type: 'global', value: 2, owned: 0, scale: 1.7, max: 1 },
       // Passive income path (harder scaling)
-      { id:'dub',   name:'Exclusive Dubplate',     desc:'+3 hype/sec',                      cost:3000,  type:'passive',value:3,   owned:0, scale:1.55 },
-      { id:'mon',   name:'Studio Monitors Stack',  desc:'+8 hype/sec',                      cost:12000, type:'passive',value:8,   owned:0, scale:1.6  },
-      { id:'stage', name:'Mainstage Booking',      desc:'+40 hype/sec',                     cost:60000, type:'passive',value:40,  owned:0, scale:1.65 }
+      { id: 'dub', name: 'Exclusive Dubplate', desc: '+3 hype/sec', cost: 3000, type: 'passive', value: 3, owned: 0, scale: 1.55 },
+      { id: 'mon', name: 'Studio Monitors Stack', desc: '+8 hype/sec', cost: 12000, type: 'passive', value: 8, owned: 0, scale: 1.6 },
+      { id: 'stage', name: 'Mainstage Booking', desc: '+40 hype/sec', cost: 60000, type: 'passive', value: 40, owned: 0, scale: 1.65 }
     ]
   };
 
   // state
   let state = null;
   const load = () => {
-    try { const s = JSON.parse(localStorage.getItem('cc_save')); if (s) return s; } catch(e){}
+    try { const s = JSON.parse(localStorage.getItem('cc_save')); if (s) return s; } catch (e) { }
     return JSON.parse(JSON.stringify(initial));
   };
-  const save  = () => localStorage.setItem('cc_save', JSON.stringify(state));
-  const reset = () => { state = JSON.parse(JSON.stringify(initial)); renderAll(); log('Reset save.'); };
+  const save = () => localStorage.setItem('cc_save', JSON.stringify(state));
+  const reset = () => { state = JSON.parse(JSON.stringify(initial)); renderAll(); log('Reset save.'); endDrop(); clearInterval(dropPulseTimer); clearInterval(dropWatchTimer); dropMultiplier = 1.0; };
 
   // ===== Audio setup =====
   let audioCtx; let muted = false;
   const CUE_SRC = '/assets/audio/cue-track.mp3'; // put your file here (avoid spaces in filename)
   const CUE_POINT = 0; // seconds; set this to jump to a cue-in point if you want
+
+  // ===== Drop logic synced to the track =====
+  const BPM = 140;
+  const BEAT_SEC = 60 / BPM;              // ~0.4286s per beat
+  const DROP_AFTER_BEATS = 128;           // when the pre-drop starts
+  const DROP_DURATION_BEATS = 16;         // how long the hype boost lasts
+  const PREDROP_BEATS = 4;                // first 4 beats = lights-only
+  const DROP_CALIBRATION_BEATS = 0;    // fire ~90% of a beat earlier (tweak as needed)
+
+  let dropActive = false;
+  let dropTriggered = false;              // for current playback session
+  let dropPulseTimer = null;              // visual pulse interval
+  let dropWatchTimer = null;              // checks audio.currentTime
+  let dropEndsAt = 0;                     // absolute audio time when drop ends (s)
+  let dropMultiplier = 1.0;               // multiplies perClick & perSec during drop
 
   // Special stinger when hype first contains "67"
   const SIX_SEVEN_SRC = '/assets/audio/6-7.mp3';
@@ -48,9 +63,30 @@
   cueAudio.crossOrigin = 'anonymous';
   cueAudio.playsInline = true;
 
+  function getPerClick(){ return state.perClick * dropMultiplier; }
+  function getPerSec(){ return state.perSec * dropMultiplier; }
+
+  // Inject minimal CSS for drop visual FX (once)
+  (function injectDropCss(){
+    if (document.getElementById('cc-drop-style')) return;
+    const css = `
+      @keyframes cc-flash { 0%{opacity:.0} 10%{opacity:.9} 100%{opacity:0} }
+      @keyframes cc-shake { 0%,100%{transform:translate(0,0)} 25%{transform:translate(2px,-2px)} 50%{transform:translate(-2px,2px)} 75%{transform:translate(2px,2px)} }
+      @keyframes cc-count { 0%{transform:scale(1)} 30%{transform:scale(1.1)} 100%{transform:scale(1)} }
+      .cc-drop-overlay{position:fixed;inset:0;background:rgba(255,255,0,.35);pointer-events:none;z-index:40;opacity:0}
+      .cc-flash{animation: cc-flash .25s ease-out}
+      .cc-shake{animation: cc-shake .25s linear}
+      #cc-hype.cc-count-zoom{display:inline-block;animation: cc-count .25s ease-out}
+    `;
+    const el = document.createElement('style');
+    el.id = 'cc-drop-style';
+    el.textContent = css;
+    document.head.appendChild(el);
+  })();
+
   // Play a one-shot blip on a separate element so spammed taps don't cut off
-  function playBlipOneShot(durationMs){
-    if(muted) return;
+  function playBlipOneShot(durationMs) {
+    if (muted) return;
     const a = new Audio(CUE_SRC);
     a.volume = cueAudio.volume;
     a.preload = 'auto';
@@ -60,7 +96,7 @@
     const cleanup = () => {
       if (cleaned) return;
       cleaned = true;
-      try { a.pause(); } catch(_) {}
+      try { a.pause(); } catch (_) { }
       // Properly detach the media without navigating to '/'
       a.removeAttribute('src');
       a.load();
@@ -69,7 +105,7 @@
     // Ensure we clean up even if the audio naturally ends
     a.addEventListener('ended', cleanup, { once: true });
 
-    a.play().catch(()=>{});
+    a.play().catch(() => { });
 
     // Stop after the requested duration for a blip
     if (Number.isFinite(durationMs)) {
@@ -77,12 +113,107 @@
     }
   }
 
-  function ensureCtx(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+  function contains67(n) {
+    try { return Math.floor(n).toString().includes('67'); } catch (_) { return false; }
+  }
+  function playSixSeven() {
+    // play without interrupting cueAudio; use a fresh element so it never cuts off
+    try {
+      const a = new Audio(SIX_SEVEN_SRC);
+      a.volume = sixSevenAudio.volume;
+      a.preload = 'auto';
+      a.play().catch(() => { });
+    } catch (_) { }
+  }
+  function startDrop(){
+    if (dropActive) return;
+    dropActive = true;
+    dropMultiplier = 1.0; // no global multiplier; we add big per-beat bonus after predrop
+    dropEndsAt = (cueAudio?.currentTime || 0) + (DROP_DURATION_BEATS * BEAT_SEC);
+
+    // Ensure overlay exists
+    let overlay = document.getElementById('cc-drop-overlay');
+    if(!overlay){
+      overlay = document.createElement('div');
+      overlay.id = 'cc-drop-overlay';
+      overlay.className = 'cc-drop-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    // Visual pulse helper
+    const pulseVisuals = () => {
+      overlay.classList.remove('cc-flash');
+      void overlay.offsetWidth;
+      overlay.classList.add('cc-flash');
+      const host = document.getElementById('cue-clicker');
+      if(host){
+        host.classList.remove('cc-shake');
+        void host.offsetWidth;
+        host.classList.add('cc-shake');
+      }
+    };
+
+    // Immediate pulse = beat 1 (visuals only)
+    let beatCount = 1;
+    pulseVisuals();
+
+    // Start beat loop
+    clearInterval(dropPulseTimer);
+    dropPulseTimer = setInterval(()=>{
+      // Stop if audio ended or we passed end window
+      if (!cueAudio || cueAudio.paused || (dropActive && cueAudio.currentTime >= dropEndsAt)) { endDrop(); return; }
+
+      beatCount++;
+      pulseVisuals();
+
+      // From beat 5 onward (after 4-beat pre-drop), start pumping hype fast
+      if (beatCount > PREDROP_BEATS) {
+        state.hype += state.hype * 2;
+        const hypeEl = document.getElementById('cc-hype');
+        if(hypeEl){
+          hypeEl.classList.remove('cc-count-zoom');
+          void hypeEl.offsetWidth;
+          hypeEl.classList.add('cc-count-zoom');
+        }
+        renderStats();
+        updateShopAfford();
+      }
+    }, BEAT_SEC * 1000);
+  }
+
+  function endDrop(){
+    if (!dropActive) return;
+    dropActive = false;
+    dropMultiplier = 1.0;
+    clearInterval(dropPulseTimer);
+    // remove residual classes
+    const overlay = document.getElementById('cc-drop-overlay');
+    if (overlay) overlay.classList.remove('cc-flash');
+    const host = document.getElementById('cue-clicker');
+    if (host) host.classList.remove('cc-shake');
+  }
+
+  function watchForDrop(){
+    clearInterval(dropWatchTimer);
+    dropTriggered = false;
+    const dropAt = (CUE_POINT) + ((DROP_AFTER_BEATS + DROP_CALIBRATION_BEATS) * BEAT_SEC); // seconds from cue point (with calibration)
+    dropWatchTimer = setInterval(()=>{
+      if (!cueAudio || cueAudio.paused) return;
+      const t = cueAudio.currentTime;
+      if (!dropTriggered && t >= dropAt){
+        dropTriggered = true;
+        startDrop();
+      }
+      if (dropActive && t >= dropEndsAt){ endDrop(); }
+    }, 50);
+  }
+
+  function ensureCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
   // Prime audio on first user interaction to reduce latency (mobile Safari etc.)
   let primed = false;
-  function primeAudio(){
-    if(primed) return;
+  function primeAudio() {
+    if (primed) return;
     primed = true;
     ensureCtx();
     // Attempt a silent play-pause to warm up the element
@@ -90,50 +221,37 @@
       const t = Math.max(0, CUE_POINT - 0.01);
       cueAudio.currentTime = t;
       cueAudio.muted = true;
-      cueAudio.play().then(()=>{
+      cueAudio.play().then(() => {
         cueAudio.pause();
         cueAudio.muted = false;
         cueAudio.currentTime = CUE_POINT;
-      }).catch(()=>{ /* ignore */ });
-    } catch(e) { /* ignore */ }
+      }).catch(() => { /* ignore */ });
+    } catch (e) { /* ignore */ }
   }
 
   // Old buy blip remains (uses WebAudio oscillator)
-  function playBuy(){
-    if(muted) return; ensureCtx();
+  function playBuy() {
+    if (muted) return; ensureCtx();
     const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-    o.type='sine'; o.frequency.value=300; g.gain.value=0.15;
+    o.type = 'sine'; o.frequency.value = 300; g.gain.value = 0.15;
     o.connect(g); g.connect(audioCtx.destination); o.start();
-    o.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime+0.18);
-    o.stop(audioCtx.currentTime+0.20);
+    o.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.18);
+    o.stop(audioCtx.currentTime + 0.20);
   }
 
-  function contains67(n){
-    try { return Math.floor(n).toString().includes('67'); } catch(_) { return false; }
-  }
-  function playSixSeven(){
-    // play without interrupting cueAudio; use a fresh element so it never cuts off
-    try {
-      const a = new Audio(SIX_SEVEN_SRC);
-      a.volume = sixSevenAudio.volume;
-      a.preload = 'auto';
-      a.play().catch(()=>{});
-    } catch(_) {}
-  }
+  const log = (msg) => { const el = $('cc-log'); if (!el) return; const p = document.createElement('div'); p.textContent = msg; el.prepend(p); };
 
-  const log = (msg) => { const el=$('cc-log'); if(!el) return; const p=document.createElement('div'); p.textContent=msg; el.prepend(p); };
-
-  function renderStats(){
-    if(!$('cc-hype')) return; // section might be absent on some pages
-    $('cc-hype').textContent     = fmt(state.hype);
+  function renderStats() {
+    if (!$('cc-hype')) return; // section might be absent on some pages
+    $('cc-hype').textContent = fmt(state.hype);
     $('cc-perclick').textContent = fmt(state.perClick);
-    $('cc-persec').textContent   = fmt(state.perSec);
+    $('cc-persec').textContent = fmt(state.perSec);
   }
 
-  function renderShop(){
-    const wrap = $('cc-shop'); if(!wrap) return;
-    wrap.innerHTML='';
-    state.shop.forEach(item=>{
+  function renderShop() {
+    const wrap = $('cc-shop'); if (!wrap) return;
+    wrap.innerHTML = '';
+    state.shop.forEach(item => {
       const atMax = (typeof item.max === 'number') && (item.owned >= item.max);
       const btn = document.createElement('button');
       btn.id = `cc-shop-${item.id}`;
@@ -147,22 +265,22 @@
           <div>
             <div class="font-semibold">${item.name}${atMax ? ' (max)' : ''}</div>
             <div class="text-xs text-gray-500">${item.desc}</div>
-            <div class="text-xs text-gray-400">Owned: ${item.owned}${item.max?` / ${item.max}`:''}</div>
+            <div class="text-xs text-gray-400">Owned: ${item.owned}${item.max ? ` / ${item.max}` : ''}</div>
           </div>
           <div class="${rightClasses}">${costLabel}</div>
         </div>`;
-      btn.onclick = ()=>{
-        if(atMax) return;
-        if(state.hype < item.cost) return;
+      btn.onclick = () => {
+        if (atMax) return;
+        if (state.hype < item.cost) return;
         state.hype -= item.cost;
         item.owned++;
         // scale price (per-item scaling, defaults harder than before)
         const s = (typeof item.scale === 'number' && item.scale > 1) ? item.scale : 1.45;
         item.cost = Math.ceil(item.cost * s);
-        if(item.type==='click')   state.perClick += item.value;
-        if(item.type==='mult')    state.perClick *= item.value;
-        if(item.type==='passive') state.perSec   += item.value;
-        if(item.type==='global'){ state.perClick *= item.value; state.perSec *= item.value; }
+        if (item.type === 'click') state.perClick += item.value;
+        if (item.type === 'mult') state.perClick *= item.value;
+        if (item.type === 'passive') state.perSec += item.value;
+        if (item.type === 'global') { state.perClick *= item.value; state.perSec *= item.value; }
         playBuy();
         renderAll();
         log(`Purchased ${item.name}.`);
@@ -171,48 +289,56 @@
       wrap.appendChild(btn);
     });
   }
-  function updateShopAfford(){
-    const wrap = $('cc-shop'); if(!wrap) return;
+  function updateShopAfford() {
+    const wrap = $('cc-shop'); if (!wrap) return;
     state.shop.forEach(item => {
       const btn = document.getElementById(`cc-shop-${item.id}`);
-      if(!btn) return;
+      if (!btn) return;
       const atMax = (typeof item.max === 'number') && (item.owned >= item.max);
       const afford = !atMax && (state.hype >= item.cost);
       btn.disabled = !afford;
       // Update the right-hand price/max label in-place
       const priceEl = btn.querySelector('div > div.font-bold');
-      if(priceEl){
-        if(atMax){
+      if (priceEl) {
+        if (atMax) {
           priceEl.textContent = 'MAXED';
           priceEl.className = 'font-bold text-gray-400';
-        }else{
+        } else {
           priceEl.textContent = fmt(item.cost);
           priceEl.className = 'font-bold text-pink-600';
         }
       }
       // Update the Owned line
       const ownedEl = btn.querySelector('div .text-xs.text-gray-400');
-      if(ownedEl){ ownedEl.textContent = `Owned: ${item.owned}${item.max?` / ${item.max}`:''}`; }
+      if (ownedEl) { ownedEl.textContent = `Owned: ${item.owned}${item.max ? ` / ${item.max}` : ''}`; }
     });
   }
 
-  function renderAll(){ renderStats(); renderShop(); }
+  function renderAll() { renderStats(); renderShop(); }
 
   let had67 = false; // updated on load and after each user click
 
-  function tick(){
+  function tick() {
     // called 10x/sec
-    state.hype += state.perSec / 10;
+    const prevHad = had67;
+    state.hype += getPerSec() / 10;
+
+    const nowHas = contains67(state.hype);
+    if (!prevHad && nowHas) {
+      playSixSeven(); // 🔊 plays stinger exactly once when crossing into a 67 number
+    }
+    had67 = nowHas;
+
     renderStats();
     updateShopAfford();
   }
 
-  function wireUI(){
+  function wireUI() {
     const cue = $('cc-cue');
-    if(!cue) return;
+    if (!cue) return;
 
     // Prime audio on first interaction anywhere in the doc
-    ['mousedown','touchstart'].forEach(evt=>document.addEventListener(evt, primeAudio, { once:true, passive:true }));
+    ['mousedown', 'touchstart'].forEach(evt => document.addEventListener(evt, primeAudio, { once: true, passive: true }));
 
     // Tap vs Hold logic: quick tap plays a tiny blip; holding keeps playing until release
     let pressing = false;
@@ -221,7 +347,7 @@
     let holdTimer = null;
     let holdStarted = false;
 
-    function startCue(){
+    function startCue() {
       if (muted || !cueAudio) return;
       if (pressing) return; // guard against duplicate events
       pressing = true;
@@ -232,14 +358,17 @@
         if (!pressing) return; // released before threshold
         holdStarted = true;
         cueAudio.currentTime = CUE_POINT;
-        cueAudio.play().catch(()=>{});
+        cueAudio.play().catch(() => { });
+        watchForDrop();
       }, HOLD_THRESHOLD_MS);
     }
 
-    function endCue(){
+    function endCue() {
       if (!pressing) return;
       pressing = false;
       clearTimeout(holdTimer);
+      endDrop();
+      clearInterval(dropWatchTimer);
       // Check previous contains('67') state before applying click gain
       const prevHad67 = had67;
 
@@ -248,11 +377,11 @@
         playBlipOneShot(BLIP_MIN_MS);
       } else {
         // It was a hold: stop and reset the main audio
-        try { cueAudio.pause(); } catch(_) {}
+        try { cueAudio.pause(); } catch (_) { }
         cueAudio.currentTime = CUE_POINT;
       }
 
-      state.hype += state.perClick;
+      state.hype += getPerClick();
       // Update and trigger stinger only on transition from *not containing* -> *containing* '67'
       const nowHas67 = contains67(state.hype);
       if (!prevHad67 && nowHas67) { playSixSeven(); }
@@ -263,22 +392,22 @@
     }
 
     // Desktop
-    cue.addEventListener('mousedown', (e)=>{ e.preventDefault(); if(e.button!==0) return; startCue(); });
-    cue.addEventListener('mouseup',   (e)=>{ e.preventDefault(); if(e.button!==0) return; endCue(); });
-    cue.addEventListener('mouseleave',(e)=>{ if(e.buttons===0 || !pressing) return; endCue(); });
+    cue.addEventListener('mousedown', (e) => { e.preventDefault(); if (e.button !== 0) return; startCue(); });
+    cue.addEventListener('mouseup', (e) => { e.preventDefault(); if (e.button !== 0) return; endCue(); });
+    cue.addEventListener('mouseleave', (e) => { if (e.buttons === 0 || !pressing) return; endCue(); });
 
     // Safety: end press if mouse/touch ends outside the button
-    window.addEventListener('mouseup',   ()=>{ if (pressing) endCue(); });
-    window.addEventListener('touchend',  ()=>{ if (pressing) endCue(); }, { passive:true });
-    window.addEventListener('touchcancel',()=>{ if (pressing) endCue(); }, { passive:true });
+    window.addEventListener('mouseup', () => { if (pressing) endCue(); });
+    window.addEventListener('touchend', () => { if (pressing) endCue(); }, { passive: true });
+    window.addEventListener('touchcancel', () => { if (pressing) endCue(); }, { passive: true });
 
     // Mobile
-    cue.addEventListener('touchstart', (e)=>{ e.preventDefault(); startCue(); }, { passive:false });
-    cue.addEventListener('touchend',   (e)=>{ e.preventDefault(); endCue(); },   { passive:false });
+    cue.addEventListener('touchstart', (e) => { e.preventDefault(); startCue(); }, { passive: false });
+    cue.addEventListener('touchend', (e) => { e.preventDefault(); endCue(); }, { passive: false });
 
-    const saveBtn = $('cc-save');  if(saveBtn)  saveBtn.addEventListener('click', ()=>{ save(); log('Saved.'); });
-    const resetBtn= $('cc-reset'); if(resetBtn) resetBtn.addEventListener('click', ()=>{ reset(); save(); });
-    const muteBtn = $('cc-mute');  if(muteBtn)  muteBtn.addEventListener('click', (e)=>{ muted=!muted; e.target.textContent = muted? '🔇 Muted' : '🔊 Mute'; });
+    const saveBtn = $('cc-save'); if (saveBtn) saveBtn.addEventListener('click', () => { save(); log('Saved.'); });
+    const resetBtn = $('cc-reset'); if (resetBtn) resetBtn.addEventListener('click', () => { reset(); save(); });
+    const muteBtn = $('cc-mute'); if (muteBtn) muteBtn.addEventListener('click', (e) => { muted = !muted; e.target.textContent = muted ? '🔇 Muted' : '🔊 Mute'; });
   }
 
   // Boot only when DOM is ready (plays nice with your scripts.js)
