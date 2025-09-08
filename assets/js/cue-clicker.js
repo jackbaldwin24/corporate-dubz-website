@@ -4,7 +4,7 @@
   const fmt = (n) => Math.floor(n).toLocaleString();
 
   const initial = {
-    hype: 6699,
+    hype: 0,
     perClick: 1,
     perSec: 0,
     shop: [
