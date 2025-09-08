@@ -8,12 +8,16 @@
     perClick: 1,
     perSec: 0,
     shop: [
-      { id:'btn2',   name:'Second Cue Button', desc:'+1 hype/click',   cost:100,  type:'click',  value:1,  owned:0 },
-      { id:'mixer',  name:'DJM-900NXS2',       desc:'x2 click power',  cost:500,  type:'mult',   value:2,  owned:0 },
-      { id:'dub',    name:'Exclusive Dubplate',desc:'+3 hype/sec',     cost:1200, type:'passive',value:3,  owned:0 },
-      { id:'mon',    name:'Studio Monitors',   desc:'+6 hype/sec',     cost:5000, type:'passive',value:6,  owned:0 },
-      { id:'stage',  name:'Mainstage Booking', desc:'+25 hype/sec',    cost:22000,type:'passive',value:25, owned:0 },
-      { id:'brand',  name:'Corporate Merch',   desc:'x2 all hype gain',cost:50000,type:'global', value:2,  owned:0 },
+      // Per‑click path (more CDJs & better cue feel)
+      { id:'cdj',   name:'Additional CDJ',         desc:'+1 hype/click (more cue buttons)', cost:150,   type:'click',  value:1,   owned:0, scale:1.45 },
+      { id:'spr',   name:'High‑Tension Cue Springs',desc:'+2 hype/click (snappier stabs)',   cost:1200,  type:'click',  value:2,   owned:0, scale:1.5  },
+      // Multipliers (limited so they don’t snowball)
+      { id:'mixer', name:'DJM‑900NXS2 Mixer',      desc:'×1.5 click power (one‑time)',      cost:8000,  type:'mult',   value:1.5, owned:0, scale:1.6, max:1 },
+      { id:'brand', name:'Corporate Merch Drop',   desc:'×2 all hype gain (one‑time)',       cost:120000,type:'global', value:2,   owned:0, scale:1.7, max:1 },
+      // Passive income path (harder scaling)
+      { id:'dub',   name:'Exclusive Dubplate',     desc:'+3 hype/sec',                      cost:3000,  type:'passive',value:3,   owned:0, scale:1.55 },
+      { id:'mon',   name:'Studio Monitors Stack',  desc:'+8 hype/sec',                      cost:12000, type:'passive',value:8,   owned:0, scale:1.6  },
+      { id:'stage', name:'Mainstage Booking',      desc:'+40 hype/sec',                     cost:60000, type:'passive',value:40,  owned:0, scale:1.65 }
     ]
   };
 
@@ -110,25 +114,31 @@
     const wrap = $('cc-shop'); if(!wrap) return;
     wrap.innerHTML='';
     state.shop.forEach(item=>{
+      const atMax = (typeof item.max === 'number') && (item.owned >= item.max);
       const btn = document.createElement('button');
       btn.id = `cc-shop-${item.id}`;
       btn.className = 'w-full text-left p-3 border rounded-lg bg-white hover:bg-pink-50 transition disabled:opacity-50';
-      const afford = state.hype >= item.cost;
+      const afford = !atMax && (state.hype >= item.cost);
       btn.disabled = !afford;
+      const costLabel = atMax ? 'MAXED' : fmt(item.cost);
+      const rightClasses = atMax ? 'font-bold text-gray-400' : 'font-bold text-pink-600';
       btn.innerHTML = `
         <div class="flex justify-between items-center">
           <div>
-            <div class="font-semibold">${item.name}</div>
+            <div class="font-semibold">${item.name}${atMax ? ' (max)' : ''}</div>
             <div class="text-xs text-gray-500">${item.desc}</div>
-            <div class="text-xs text-gray-400">Owned: ${item.owned}</div>
+            <div class="text-xs text-gray-400">Owned: ${item.owned}${item.max?` / ${item.max}`:''}</div>
           </div>
-          <div class="font-bold text-pink-600">${fmt(item.cost)}</div>
+          <div class="${rightClasses}">${costLabel}</div>
         </div>`;
       btn.onclick = ()=>{
+        if(atMax) return;
         if(state.hype < item.cost) return;
         state.hype -= item.cost;
         item.owned++;
-        item.cost = Math.ceil(item.cost * 1.28); // price scaling
+        // scale price (per-item scaling, defaults harder than before)
+        const s = (typeof item.scale === 'number' && item.scale > 1) ? item.scale : 1.45;
+        item.cost = Math.ceil(item.cost * s);
         if(item.type==='click')   state.perClick += item.value;
         if(item.type==='mult')    state.perClick *= item.value;
         if(item.type==='passive') state.perSec   += item.value;
@@ -146,8 +156,23 @@
     state.shop.forEach(item => {
       const btn = document.getElementById(`cc-shop-${item.id}`);
       if(!btn) return;
-      const afford = state.hype >= item.cost;
+      const atMax = (typeof item.max === 'number') && (item.owned >= item.max);
+      const afford = !atMax && (state.hype >= item.cost);
       btn.disabled = !afford;
+      // Update the right-hand price/max label in-place
+      const priceEl = btn.querySelector('div > div.font-bold');
+      if(priceEl){
+        if(atMax){
+          priceEl.textContent = 'MAXED';
+          priceEl.className = 'font-bold text-gray-400';
+        }else{
+          priceEl.textContent = fmt(item.cost);
+          priceEl.className = 'font-bold text-pink-600';
+        }
+      }
+      // Update the Owned line
+      const ownedEl = btn.querySelector('div .text-xs.text-gray-400');
+      if(ownedEl){ ownedEl.textContent = `Owned: ${item.owned}${item.max?` / ${item.max}`:''}`; }
     });
   }
 
