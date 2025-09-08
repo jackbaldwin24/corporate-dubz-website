@@ -4,12 +4,12 @@
   const fmt = (n) => Math.floor(n).toLocaleString();
 
   const initial = {
-    hype: 0,
+    hype: 6699,
     perClick: 1,
     perSec: 0,
     shop: [
       // Per‑click path (more CDJs & better cue feel)
-      { id:'cdj',   name:'Additional CDJ',         desc:'+1 hype/click (more cue buttons)', cost:150,   type:'click',  value:1,   owned:0, scale:1.45 },
+      { id:'cdj',   name:'Additional CDJ',         desc:'+1 hype/click (more cue buttons)', cost:67,   type:'click',  value:1,   owned:0, scale:1.45 },
       { id:'spr',   name:'High‑Tension Cue Springs',desc:'+2 hype/click (snappier stabs)',   cost:1200,  type:'click',  value:2,   owned:0, scale:1.5  },
       // Multipliers (limited so they don’t snowball)
       { id:'mixer', name:'DJM‑900NXS2 Mixer',      desc:'×1.5 click power (one‑time)',      cost:8000,  type:'mult',   value:1.5, owned:0, scale:1.6, max:1 },
@@ -34,6 +34,13 @@
   let audioCtx; let muted = false;
   const CUE_SRC = '/assets/audio/cue-track.mp3'; // put your file here (avoid spaces in filename)
   const CUE_POINT = 0; // seconds; set this to jump to a cue-in point if you want
+
+  // Special stinger when hype first contains "67"
+  const SIX_SEVEN_SRC = '/assets/audio/6-7.mp3';
+  let sixSevenAudio = new Audio(SIX_SEVEN_SRC);
+  sixSevenAudio.preload = 'auto';
+  sixSevenAudio.volume = 0.8;
+  sixSevenAudio.playsInline = true;
 
   let cueAudio = new Audio(CUE_SRC);
   cueAudio.preload = 'auto';
@@ -99,6 +106,19 @@
     o.connect(g); g.connect(audioCtx.destination); o.start();
     o.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime+0.18);
     o.stop(audioCtx.currentTime+0.20);
+  }
+
+  function contains67(n){
+    try { return Math.floor(n).toString().includes('67'); } catch(_) { return false; }
+  }
+  function playSixSeven(){
+    // play without interrupting cueAudio; use a fresh element so it never cuts off
+    try {
+      const a = new Audio(SIX_SEVEN_SRC);
+      a.volume = sixSevenAudio.volume;
+      a.preload = 'auto';
+      a.play().catch(()=>{});
+    } catch(_) {}
   }
 
   const log = (msg) => { const el=$('cc-log'); if(!el) return; const p=document.createElement('div'); p.textContent=msg; el.prepend(p); };
@@ -178,6 +198,8 @@
 
   function renderAll(){ renderStats(); renderShop(); }
 
+  let had67 = false; // updated on load and after each user click
+
   function tick(){
     // called 10x/sec
     state.hype += state.perSec / 10;
@@ -218,6 +240,8 @@
       if (!pressing) return;
       pressing = false;
       clearTimeout(holdTimer);
+      // Check previous contains('67') state before applying click gain
+      const prevHad67 = had67;
 
       if (!holdStarted) {
         // It was a quick tap: play ONE blip on its own element so spamming doesn't cut off
@@ -229,6 +253,11 @@
       }
 
       state.hype += state.perClick;
+      // Update and trigger stinger only on transition from *not containing* -> *containing* '67'
+      const nowHas67 = contains67(state.hype);
+      if (!prevHad67 && nowHas67) { playSixSeven(); }
+      had67 = nowHas67;
+
       renderStats();
       updateShopAfford();
     }
@@ -255,6 +284,7 @@
   // Boot only when DOM is ready (plays nice with your scripts.js)
   document.addEventListener('DOMContentLoaded', () => {
     state = load();
+    had67 = contains67(state.hype);
     renderAll();
     wireUI();
     setInterval(tick, 100); // 10 FPS idle tick
