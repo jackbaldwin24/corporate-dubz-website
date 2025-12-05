@@ -255,19 +255,18 @@
       const atMax = (typeof item.max === 'number') && (item.owned >= item.max);
       const btn = document.createElement('button');
       btn.id = `cc-shop-${item.id}`;
-      btn.className = 'w-full text-left p-3 border rounded-lg bg-white hover:bg-pink-50 transition disabled:opacity-50';
+      btn.className = 'shop-button';
       const afford = !atMax && (state.hype >= item.cost);
       btn.disabled = !afford;
       const costLabel = atMax ? 'MAXED' : fmt(item.cost);
-      const rightClasses = atMax ? 'font-bold text-gray-400' : 'font-bold text-pink-600';
       btn.innerHTML = `
-        <div class="flex justify-between items-center">
-          <div>
-            <div class="font-semibold">${item.name}${atMax ? ' (max)' : ''}</div>
-            <div class="text-xs text-gray-500">${item.desc}</div>
-            <div class="text-xs text-gray-400">Owned: ${item.owned}${item.max ? ` / ${item.max}` : ''}</div>
+        <div class="shop-row">
+          <div class="shop-left">
+            <div class="shop-title">${item.name}${atMax ? ' (max)' : ''}</div>
+            <div class="shop-desc">${item.desc}</div>
+            <div class="shop-meta">Owned: ${item.owned}${item.max ? ` / ${item.max}` : ''}</div>
           </div>
-          <div class="${rightClasses}">${costLabel}</div>
+          <div class="shop-price ${atMax ? 'muted' : ''}">${costLabel}</div>
         </div>`;
       btn.onclick = () => {
         if (atMax) return;
@@ -298,18 +297,18 @@
       const afford = !atMax && (state.hype >= item.cost);
       btn.disabled = !afford;
       // Update the right-hand price/max label in-place
-      const priceEl = btn.querySelector('div > div.font-bold');
+      const priceEl = btn.querySelector('.shop-price');
       if (priceEl) {
         if (atMax) {
           priceEl.textContent = 'MAXED';
-          priceEl.className = 'font-bold text-gray-400';
+          priceEl.classList.add('muted');
         } else {
           priceEl.textContent = fmt(item.cost);
-          priceEl.className = 'font-bold text-pink-600';
+          priceEl.classList.remove('muted');
         }
       }
       // Update the Owned line
-      const ownedEl = btn.querySelector('div .text-xs.text-gray-400');
+      const ownedEl = btn.querySelector('.shop-meta');
       if (ownedEl) { ownedEl.textContent = `Owned: ${item.owned}${item.max ? ` / ${item.max}` : ''}`; }
     });
   }
@@ -411,7 +410,8 @@
   }
 
   // Boot only when DOM is ready (plays nice with your scripts.js)
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    try { await (window.partialsReady || Promise.resolve()); } catch (_) { }
     state = load();
     had67 = contains67(state.hype);
     renderAll();

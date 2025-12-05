@@ -1,0 +1,35 @@
+[
+  {
+    "slug": "a-tale-of-two-cities",
+    "date": "Dec 12",
+    "title": "A Tale of Two Cities",
+    "promoter": "GOOFTROOP",
+    "venue": "Monsterz Inc",
+    "location": "Indianapolis, IN",
+    "link": "https://posh.vip/e/a-tale-of-two-cities-riddim",
+    "image": "images/monsterzinc.png",
+    "cta": "Tickets"
+  },
+  {
+    "slug": "ignant-takeover-chicago",
+    "date": "Dec 20",
+    "title": "Ignant Takeover ft. Severe",
+    "promoter": "Ignant",
+    "venue": "Bourbon on Division",
+    "location": "Chicago, IL",
+    "link": "https://dice.fm/event/3oywnp-ignant-takeover-11th-oct-bourbon-on-division-chicago-tickets",
+    "image": "images/severe.png",
+    "cta": "Tickets"
+  },
+  {
+    "slug": "deucez-fee-free",
+    "date": "Dec 27",
+    "title": "Deucez",
+    "promoter": "Bassmint",
+    "venue": "The Mint at The Intersection",
+    "location": "Grand Rapids, MI",
+    "link": "https://www.etix.com/ticket/c/00094115ACC738DBC36603994537AE8D/corporatedubzopener-for-deucez",
+    "image": "images/deucez.jpg",
+    "cta": "Tickets"
+  }
+]
