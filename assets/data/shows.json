@@ -1,35 +1,24 @@
 [
   {
-    "slug": "astrl-crossing",
-    "date": "Dec 19",
-    "title": "Astrl Crossing",
-    "promoter": "Astrl Prjkt",
-    "venue": "Magoos",
-    "location": "Chicago, IL",
-    "link": "https://theticketing.co/e/astrlcrossing1219",
-    "image": "images/astrl-crossing.JPEG",
+    "slug": "matty-ice",
+    "date": "Feb 20",
+    "title": "Matty Ice Frozen Love EP Release Party",
+    "promoter": "Wub Life",
+    "venue": "Bass Station",
+    "location": "Waukegan, IL",
+    "link": "https://theticketing.co/e/mattyice",
+    "image": "images/matty-ice.png",
     "cta": "Tickets"
   },
   {
-    "slug": "ignant-takeover-chicago",
-    "date": "Dec 20",
-    "title": "Ignant Takeover ft. Severe",
+    "slug": "spellthief",
+    "date": "Mar 7",
+    "title": "Spellthief",
     "promoter": "Ignant",
-    "venue": "Bourbon on Division",
+    "venue": "Durty Nellie's",
     "location": "Chicago, IL",
-    "link": "https://dice.fm/event/7dq756-ignant-takeover-ft-severe-20th-dec-bourbon-on-division-chicago-tickets?lng=en-US",
-    "image": "images/severe.png",
-    "cta": "Tickets"
-  },
-  {
-    "slug": "deucez-fee-free",
-    "date": "Dec 27",
-    "title": "Deucez",
-    "promoter": "Bassmint",
-    "venue": "The Mint at The Intersection",
-    "location": "Grand Rapids, MI",
-    "link": "https://www.etix.com/ticket/c/00094115ACC738DBC36603994537AE8D/corporatedubzopener-for-deucez",
-    "image": "images/deucez.jpg",
+    "link": "https://www.eventbrite.com/e/ignant-presents-spellthief-tickets-1982201911276",
+    "image": "images/spellthief.png",
     "cta": "Tickets"
   }
 ]
